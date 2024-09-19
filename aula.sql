@@ -124,7 +124,114 @@ SHOW USER;
 	ATRIBUTO3 TIPO (TAMANHO),
 	CONSTRAINT "NOME" [PRIMARY KEY | FOREIGN KEY | CHECK] PARAMETROS); */
 	
+/* O tipo de dado autoincremento não existe no oracle 
+   Essa situação é implementada por meio de uma sequence*/
+   /* SINTAXE*/
+   /*CREATE SEQUENCE "nome da sequencia"
+		START WITH 	n (valor inicial da sequencia)
+			INCREMENT BY n (valor da incrementação)
+				MAXVALUE n (valor maximo da sequencia)
+					MINVALUE n (valor minimo da sequencia)
+						CACHE n (quantidade de valor em cache)
+							CYCLE|NOCYCLE (se a sequencia sera ciclica ou nao) */
 
+CURRVAL (current value) -- Mostra o valor atual da sequencia *SO PODE SER USADO APOS A SEQUENCIA TER SIDA INICIALIZADA*
+NEXTVAL (next value) -- Incrimenta o valor da sequencia	
 
+-- Exemplo
+CREATE SEQUENCE SEQFORNECEDOR
+	START WITH 1
+		INCREMENT BY 1
+			MAXVALUE  99999
+				MINVALUE 1
+					CACHE 10
+						NOCYCLE;
+						
+	GRANT DBA TO "5W_839832"
+	
+	CREATE SEQUENCE SEQPRODUTO
+		START WITH 1
+			INCREMENT BY 1
+				MAXVALUE 999
+					MINVALUE 1
+						CACHE 5
+							NOCYCLE;
+							
+	USER_SEQUENCES -- tabela que armazena as sequencias de um USUARIO
+		SELECT * FROM USER_SEQUENCES;
+		
+	/* INSERIR REGISTROS EM UMA TABEA 
+	   SINTAXE*/
+	   INSERT INTO NOMETABELA(atributo(s)) VALUES (valor(es))
+	   
+	   INSERT INTO PRODUTO(COD_PRODUTO, NOM_PRODUTO, DSC_PRODUTO)
+			VALUES SEQPRODUTO.NEXTVAL, 'Notebook 15', 'Notebook 15 marca X'); 
+			(*), TESTE: SELECT SEQPRODUTO.CURRVAL FROM DUAL;
+			
+			
+		INSERT INTO FORNECEDOR(COD_FORNECEDOR, RAZ_SOCIAL_FORNECEDOR, CNPJ_FORNECEDOR, IE FORNECEDOR, EMAIL_FORNECEDOR)	
+			VALUES (SEQFORNECEDOR.NEXTVAL, 'DELL computadores', '123456789900086', '1234567890', 'vendas@dell.com.br');
+			
+		COMMIT -- ratifica as transações no banco de DADOS
+		ROLLBACK -- desfaz as transações que ainda n foram ratificados
+		
+	/* ALTERAR REGISTROS DE UMA TABELA
+		SINTAXE */
+	/*	UPDATE NOMETABELA SET ATRIBUTO = NOVOVALOR
+		 [WHERE CONDIÇÃO] */
+	/* exemplo */
+		UPDATE PRODUTO SET NOM_PRODUTO = 'Notebook i5 top'
+			WHERE COD_PRODUTO = 1;
 
+	/* SINTAXE 
+	SELECT atributo(s) FROM nome tabela 
+	[WHERE condição(ões) | ORDER BY atributo(s) | GROUP BY atributo | HAVING]
+	Funções agregadas 
+	SUM() - somatoria
+	AVG() - média
+	MAX() - máximo - maior valor
+	MIN() - mínimo - menor valor
+	COUNT() - contagem */
+	
+	/*1) listar o nome dos medicos e seu respectivo salario */
+	
+	SELECT NOM_MEDICO || ' ' || SBN_MEDICO nome, SAL_MEDICO Salario FROM MEDICO;
 
+	/*2) Listar o maior salário que um médico recebe */
+	SELECT MAX(SAL_MEDICO) FROM MEDICO;
+	
+	/*3) Mostrar o nome do(s) médico(s) que recebe(m) o maior salario*/
+	SELECT NOM_MEDICO || ' ' || SBN_MEDICO Nome FROM MEDICO 
+		WHERE SAL_MEDICO = (SELECT MAX(SAL_MEDICO) FROM MEDICO);
+
+	/*4) Mostrar a média salarial dos medicos*/
+	SELECT AVG(SAL_MEDICO) Media_Salario FROM MEDICO;
+	
+	/*5) Mostrar a quantidade de pacientes cadastrados*/
+	SELECT COUNT(*) QTD_PACIENTES FROM PACIENTE;
+	
+	/*6) Mostrar a quantidade de pacientes cadastrados que são do esdado de São Paulo*/
+	SELECT COUNT(*) QTD_PACIENTES_SP FROM PACIENTE
+		WHERE UPPER (UF_PACIENTE) = 'SP';
+	
+	/*7) Mostrar a quantidade de pacientes cadastrados por estado*/
+	SELECT UF_PACIENTE UF, COUNT(*) QTD_PACIENTE
+		FROM PACIENTE GROUP BY UF_PACIENTE;
+	
+	/*8) Listar o numero de exame, a data de ralização e o nome do paciente*/
+	SELECT EL.NUM_EXAME, EL.DTA_EXAME, P.NOM_PACIENTE
+		FROM EXAME_LABORATORIO EL, PACIENTE P
+			WHERE EL.COD_PACIENTE = P.COD_PACIENTE;
+	
+	/*9) Listar o nome dos pacientes que fizeram exames no ano de 2020*/
+	SELECT P.NOM_PACIENTE Nome
+		FROM PACIENTE P, EXAME_LABORATORIO EX
+			WHERE P.COD_PACIENTE = EX.COD_PACIENTE
+				AND TO_CHAR (EX.DTA_EXAME, 'YYYY') = '2020';
+				
+	/*10) Listar o nome do exame que foi realizado por um paciente atendido em um UBDS do estado de Sâo Paulo*/
+	SELECT E.NOM_EXAME Exame 	
+		FROM EXAME_LABORATORIO EL, EXAME E, UBDS U
+			WHERE U.COD_UBDS = EL.COD_UBDS
+				AND EL.COD_EXAME = E.COD_EXAME
+					AND UPPER(U.UF_UBDS) = 'SP';
