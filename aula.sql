@@ -524,3 +524,67 @@ CREATE SEQUENCE SEQFORNECEDOR
 	SELECT * FROM CONCURSO;
 	
 	COMMIT;
+	
+	
+	/* Aula 07/11/2024 */
+	
+	CREATE OR [REPLACE] FUNCTION "nome função"
+	RETURN tipo retorno
+	IS/AS 
+	declaração das variaves
+	BEGIN
+	-- instruções PL/SQL
+	RETURN "o que será retornado"
+	END;
+	
+	/* (*) Para executar executar um procedimento e função comando EXECUTE OU EXEC*/
+	
+	EXECUTE NOME_FUNÇÃO/PROCEDIMENTO(parâmetro(s))
+	
+	/* Função SUBSTR() - Função que permite percorrer uma string
+	Sintaxe: 
+	SUBSTR(string, posição inicial, quantidade de caracteres a serem percorridos)
+	
+	Exemplo:
+	1-Função para frmatar o CPF*/
+	
+	CREATE OR REPLACE FUNCTION FTM_CPF839832(PCPF IN MEDICO.CPF_MEDICO%TYPE)
+	RETURN VARCHAR2
+	IS
+	VCPF VARCHAR2(14);
+	BEGIN
+	IF(LENGTH(PCPF) = 11) THEN 
+		VCPF := SUBSTR(PCPF, 1, 3) || '.' || SUBSTR(PCPF, 4, 3) || '.' || SUBSTR(PCPF, 7, 3) || '-'|| SUBSTR(PCPF, 10);
+	ELSE 
+		VCPF := 'INCORRETO';
+	END IF;
+	RETURN VCPF;
+	END;
+	
+	SELECT NOM_MEDICO, FTM_CPF839832(CPF_MEDICO) CPF FROM MEDICO;
+	
+	/*Atividade 
+	1- Elaborar uma função para retornar a idade das pessoas
+	entrada data de nascimento
+	recomendavel
+	funções: TRUNC() - trunca um numero e MONTHS_BETWEEN()- retorna a diferença em meses entre duas datas*/
+	
+	CREATE OR REPLACE FUNCTION TRUNC_839832(TDTN_ALUNO IN ALUNO.DTN_ALUNO%TYPE) 
+	RETURN NUMBER
+	IS
+	IDADE NUMBER;
+	BEGIN 
+	IDADE := MONTHS_BETWEEN(SYSDATE,TDTN_ALUNO);
+	RETURN TRUNC(IDADE/12);
+	END;
+	
+	SELECT NOM_ALUNO, TRUNC_839832(DTN_ALUNO) IDADE FROM ALUNO;
+	
+	/*2- elabore uma função para retornar o valor do IRPF que o MEDICO devera pagar
+	considere a tabela vigente
+	Base de calculo (R$)		aliquota(%)		Dedução do IR(R$)
+Até R$ 2.259,20				 0%					R$0,00
+De R$ 2.259,21 ATE R$2.8625,65	 7,5%				R$ 169,44
+De R$2.8625,66 ATE R$3.751,05		 15%					R@ 381,44
+De R$3.751,06 ATE R$4664,68 		 22,5%				R$ 662,77
+Acima de R$4.664,69				 27,5%				R$ 896,00
